@@ -13,7 +13,7 @@ public class GamePanel extends JPanel {
 
             @Override
             public void mouseClicked(MouseEvent me) {
-                if((Game.isServer && !Game.serverCanGo) || (!Game.isServer && !Game.clientCanGo) ){
+                if ((Game.isServer && !Game.serverCanGo) || (!Game.isServer && !Game.clientCanGo)) {
                     return;
                 }
                 int type;
@@ -47,12 +47,10 @@ public class GamePanel extends JPanel {
                     if (!Game.isServer) {
                         Game.clientDataReady = true;
                         Game.clientCanGo = false;
-                    }
-                    else {
+                    } else {
                         Game.serverDataReady = true;
                         Game.serverCanGo = false;
                     }
-                    System.out.println("Client: new click processed!");
                 } else {
                     java.awt.Toolkit.getDefaultToolkit().beep();
                 }
@@ -63,67 +61,37 @@ public class GamePanel extends JPanel {
 
     @Override
     public void paintComponent(Graphics g) {
-
-
-
         Graphics2D g2d = (Graphics2D) g;
-
-
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
         g2d.setColor(Color.white);
         g2d.fillRect(0, 0, getWidth(), getHeight());
-
-
         g2d.setColor(Color.BLACK);
-
-
-        g2d.setStroke(new BasicStroke(5.0f));
+        g2d.setStroke(new BasicStroke(2.5f));
         for (int i = 0; i < Game.N - 1; i++) {
-
             g2d.drawLine((i + 1) * getWidth() / Game.N, 0, (i + 1) * getWidth() / Game.N, getHeight());
         }
         for (int i = 0; i < Game.N - 1; i++) {
-
             g2d.drawLine(0, (i + 1) * getHeight() / Game.N, getWidth(), (i + 1) * getHeight() / Game.N);
         }
-
-
         for (int i = 0; i < Game.N; i++) {
-
             for (int j = 0; j < Game.N; j++) {
-
                 if (Game.board[i][j] == 1) {
-
-                    drawKrestik(g2d, j, i, getWidth(), getHeight(), Game.N);
+                    drawCross(g2d, j, i, getWidth(), getHeight(), Game.N);
                 } else {
-
                     if (Game.board[i][j] == 2) {
-
-                        drawNolik(g2d, j, i, getWidth(), getHeight(), Game.N);
+                        drawNaught(g2d, j, i, getWidth(), getHeight(), Game.N);
                     }
                 }
             }
         }
-
-
-        if (Game.isKrestikWin() && !gameOverHappened ) {
-
-            System.out.println("Krestik win!!!");
-
+        if (Game.isCrossesWin() && !gameOverHappened) {
             gameOverHappened = true;
-
-            SwingUtilities.invokeLater(new Runnable(){
-
+            SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-
-
-                    if(Game.isServer) {
+                    if (Game.isServer) {
                         JOptionPane.showMessageDialog(null, "Вы проиграли!");
-                    }
-                    else{
-
+                    } else {
                         JOptionPane.showMessageDialog(null, "Вы победили!");
                     }
                     System.exit(0);
@@ -132,12 +100,12 @@ public class GamePanel extends JPanel {
 
             return;
         }
-        if (Game.isNolikWin() && !gameOverHappened ) {
+        if (Game.isNaughtsWin() && !gameOverHappened) {
             gameOverHappened = true;
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    if(Game.isServer) {
+                    if (Game.isServer) {
                         JOptionPane.showMessageDialog(null, "Вы победили!");
                     } else {
                         JOptionPane.showMessageDialog(null, "Вы проиграли!");
@@ -147,9 +115,7 @@ public class GamePanel extends JPanel {
             });
             return;
         }
-
-
-        if(Game.isDraw() && !gameOverHappened ) {
+        if (Game.isDraw() && !gameOverHappened) {
             gameOverHappened = true;
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
@@ -163,8 +129,8 @@ public class GamePanel extends JPanel {
     }
 
 
-    private void drawKrestik(Graphics2D g2d, int xStep, int yStep, int width, int height, int N) {
-        g2d.setColor(Color.red);
+    private void drawCross(Graphics2D g2d, int xStep, int yStep, int width, int height, int N) {
+        g2d.setColor(Color.green);
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2d.setStroke(new BasicStroke(8.0f));
         int xLeft = xStep * width / N + 25;
@@ -175,7 +141,7 @@ public class GamePanel extends JPanel {
         g2d.drawLine(xLeft, yLow, xRight, yUp);
     }
 
-    private void drawNolik(Graphics2D g2d, int xStep, int yStep, int width, int height, int N) {
+    private void drawNaught(Graphics2D g2d, int xStep, int yStep, int width, int height, int N) {
         g2d.setColor(Color.blue);
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2d.setStroke(new BasicStroke(8.0f));
