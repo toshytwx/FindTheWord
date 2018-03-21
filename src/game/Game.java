@@ -14,6 +14,7 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -22,22 +23,17 @@ public class Game extends JFrame implements Runnable {
     static boolean serverCanGo = false;
     static boolean clientCanGo = true;
     static boolean isServer = false;
-    static final int N = 4;
-    static int[][] board;
-
+    static char letter = '?';
+    private char[] randomWordForGame;
     private final static int MY_WIDTH = 400;
     private final static int MY_HEIGHT = 200;
-    static int elderFrameXLocation = 0;
-    static int elderFrameYLocation = 0;
-    static int verStep;
-    static int horStep;
+    private int counter = 0;
 
     private boolean modeReady = false;
     private JButton serverButton;
     private JButton clientButton;
     private JTextField ipField;
     private JButton ipButton;
-
 
     private ServerSocket serverSocket = null;
     private Socket remoteClientSocket = null;
@@ -56,18 +52,14 @@ public class Game extends JFrame implements Runnable {
         super("The Game");
         this.setSize(new Dimension(MY_WIDTH, MY_HEIGHT));
         this.setResizable(false);
-        board = new int[N][N];
-        for (int i = 0; i < N; i++) {
-            for (int j = 0; j < N; j++) {
-                board[i][j] = 0;
-            }
-        }
         JPanel borderPanel = new JPanel();
         borderPanel.setSize(300, 20);
         borderPanel.setMinimumSize(new Dimension(300, 20));
 
         serverButton = new JButton("Play!");
         ipButton = new JButton("Connect!");
+        int wordKey = ThreadLocalRandom.current().nextInt(0, 10);
+        randomWordForGame = Dictionary.getRandomWordForGame(wordKey);
         ipButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -77,7 +69,10 @@ public class Game extends JFrame implements Runnable {
                     fromClientToServer = new PrintWriter(remoteClientSocket.getOutputStream(), true);
                     toClientFromServer = new BufferedReader(new InputStreamReader(remoteClientSocket.getInputStream()));
                     clientSideConnectionOk = true;
-                    gameFrame = new GameFrame("game.Game of Client", MY_HEIGHT);
+                    gameFrame = new GameFrame("game.Game of Client");
+                    gameFrame.gamePanel.setRandomWord(randomWordForGame);
+                    gameFrame.setRandomWordForGame(); //TO DO: place randomNum here.
+                    fromClientToServer.println(wordKey);
                 } catch (UnknownHostException uhe) {
                     System.err.println("Don't know about host: " + ia.getHostAddress());
                     System.exit(1);
@@ -149,131 +144,10 @@ public class Game extends JFrame implements Runnable {
         innerPanel.add(ipPanel);
         innerPanel.add(borderPanel);
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
-        Toolkit toolkit = getToolkit();
-
-        Dimension screenSize = toolkit.getScreenSize();
-        elderFrameXLocation = screenSize.width / 2 - MY_WIDTH / 2;
-        elderFrameYLocation = (screenSize.height / 2 - MY_HEIGHT / 2) - 300;
-        this.setLocation(elderFrameXLocation, elderFrameYLocation);
         this.setVisible(true);
     }
 
     static boolean isDraw() {
-        for (int i = 0; i < N; i++) {
-            for (int j = 0; j < N; j++) {
-                if (board[i][j] == 0) {
-                    return false;
-                }
-            }
-        }
-        if (isCrossesWin()) {
-            return false;
-        }
-        if (isNaughtsWin()) {
-            return false;
-        }
-        return true;
-    }
-
-    static boolean isCrossesWin() {
-        for (int i = 0; i < N; i++) {
-            boolean horWin = true;
-            for (int j = 0; j < N; j++) {
-                if (board[i][j] != 1) {
-                    horWin = false;
-                    break;
-                }
-            }
-            if (horWin) {
-                return true;
-            }
-        }
-        for (int i = 0; i < N; i++) {
-            boolean verWin = true;
-            for (int j = 0; j < N; j++) {
-                if (board[j][i] != 1) {
-                    verWin = false;
-                    break;
-                }
-            }
-            if (verWin) {
-                return true;
-            }
-        }
-        boolean diagWin = true;
-        for (int i = 0; i < N; i++) {
-            int j = i;
-            if (board[i][j] != 1) {
-                diagWin = false;
-                break;
-            }
-        }
-        if (diagWin) {
-            return true;
-        }
-        diagWin = true;
-        for (int i = 0; i < N; i++) {
-            int j = N - 1 - i;
-            if (board[i][j] != 1) {
-                diagWin = false;
-                break;
-            }
-        }
-        if (diagWin) {
-            return true;
-        }
-        return false;
-    }
-
-    static boolean isNaughtsWin() {
-        for (int i = 0; i < N; i++) {
-            boolean horWin = true;
-            for (int j = 0; j < N; j++) {
-                if (board[i][j] != 2) {
-                    horWin = false;
-                    break;
-                }
-            }
-            if (horWin) {
-                return true;
-            }
-        }
-        for (int i = 0; i < N; i++) {
-            boolean verWin = true;
-            for (int j = 0; j < N; j++) {
-                if (board[j][i] != 2) {
-                    verWin = false;
-                    break;
-                }
-            }
-            if (verWin) {
-                return true;
-            }
-        }
-        boolean diagWin = true;
-        for (int i = 0; i < N; i++) {
-            int j = i;
-            if (board[i][i] != 2) {
-
-                diagWin = false;
-                break;
-            }
-        }
-        if (diagWin) {
-            return true;
-        }
-        diagWin = true;
-        for (int i = 0; i < N; i++) {
-            int j = N - 1 - i;
-            if (board[i][j] != 2) {
-                diagWin = false;
-                break;
-            }
-        }
-        if (diagWin) {
-
-            return true;
-        }
         return false;
     }
 
@@ -286,6 +160,7 @@ public class Game extends JFrame implements Runnable {
                 Logger.getLogger(Game.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
+        int randomNum = ThreadLocalRandom.current().nextInt(0, 10 + 1);
         if (!isServer) {
             while (!clientSideConnectionOk) {
                 try {
@@ -298,11 +173,9 @@ public class Game extends JFrame implements Runnable {
                 try {
                     while (true) {
                         if (clientDataReady) {
-                            String s = "";
-                            s = s.concat(String.valueOf(verStep));
-                            s = s.concat(" ");
-                            s = s.concat(String.valueOf(horStep));
-                            fromClientToServer.println(s);
+                            System.out.println("writing: " + letter);
+                            gameFrame.displayIncomingLetter(letter);
+                            fromClientToServer.println(letter);
                             clientDataReady = false;
                             break;
                         } else {
@@ -315,12 +188,15 @@ public class Game extends JFrame implements Runnable {
                     }
                     String str;
                     while ((str = toClientFromServer.readLine()) != null) {
-                        String[] words = str.split(" ");
-                        int verStep = Integer.parseInt(words[0]);
-                        int horStep = Integer.parseInt(words[1]);
-                        board[verStep][horStep] = 2;
+                        char letter = str.toCharArray()[0];
+                        System.out.println("reading:" + letter);
+                        gameFrame.gamePanel.getSendLetter().setEnabled(true);
+                        gameFrame.gamePanel.saidLetters.add(letter);
+                        gameFrame.displayIncomingLetter(letter);
                         gameFrame.repaint();
-                        clientCanGo = true;
+                        if (!serverCanGo) {
+                            clientCanGo = true;
+                        }
                         break;
                     }
                 } catch (IOException ex) {
@@ -340,29 +216,27 @@ public class Game extends JFrame implements Runnable {
                 java.awt.Toolkit.getDefaultToolkit().beep();
 
                 String inputLine;
-                String outputLine;
-                gameFrame = new GameFrame("game.Game of Server", MY_HEIGHT);
+                gameFrame = new GameFrame("game.Game of Server");
+                setWordForServerGame(toServerFromClient);
                 while (true) {
                     while ((inputLine = toServerFromClient.readLine()) != null) {
-                        String[] coords = inputLine.split(" ");
-                        int vStep = Integer.parseInt(coords[0]);
-                        int hStep = Integer.parseInt(coords[1]);
-                        if (board[vStep][hStep] != 0) {
-                            java.awt.Toolkit.getDefaultToolkit().beep();
-                        } else {
-                            board[vStep][hStep] = 1;
-                        }
+                        char symbol = inputLine.toCharArray()[0];
+                        System.out.println("reading:" + symbol);
+                        gameFrame.gamePanel.getSendLetter().setEnabled(true);
+                        gameFrame.gamePanel.saidLetters.add(symbol);
+                        gameFrame.displayIncomingLetter(symbol);
                         gameFrame.repaint();
-                        serverCanGo = true;
+                        if (!clientCanGo) {
+                            serverCanGo = true;
+                        }
                         break;
                     }
                     while (true) {
                         if (serverDataReady) {
-                            outputLine = String.valueOf(verStep);
-                            outputLine = outputLine.concat(" ");
-                            outputLine = outputLine.concat(String.valueOf(horStep));
                             serverDataReady = false;
-                            fromServerToClient.println(outputLine);
+                            System.out.println("writing: " + letter);
+                            gameFrame.displayIncomingLetter(letter);
+                            fromServerToClient.println(letter);
                             break;
                         } else {
                             Thread.sleep(5);
@@ -374,6 +248,18 @@ public class Game extends JFrame implements Runnable {
             } catch (IOException ioe) {
                 JOptionPane.showMessageDialog(null, "Client disconnected...");
                 System.exit(1);
+            }
+        }
+    }
+
+    private void setWordForServerGame(BufferedReader toServerFromClient) throws IOException {
+        if (counter == 0) {
+            char key = toServerFromClient.readLine().toCharArray()[0];
+            if (((int) key) >= 48 && ((int) key) <= 57) {
+                char[] randomWord = Dictionary.getRandomWordForGame(key);
+                gameFrame.gamePanel.setRandomWord(randomWord);
+                gameFrame.setRandomWordForGame();
+                counter++;
             }
         }
     }
