@@ -15,6 +15,7 @@ public class GamePanell extends JDialog {
     private JTable wordPanel;
     private JFormattedTextField letterInputField;
     private JTextArea infoTextArea;
+    private JTextField saidLettersTextField;
     public static ArrayList<Character> saidLetters = new ArrayList<>();
     private char[] randomWordForGame = null;
 
@@ -59,10 +60,9 @@ public class GamePanell extends JDialog {
     private void onOK() {
         String value = (String) letterInputField.getValue();
         saidLetters.add(value.charAt(0));
-        infoTextArea.setText(infoTextArea.getText() + "\n" + "You said:" + value.charAt(0));
+        infoTextArea.setText(infoTextArea.getText() + "\n" + "ВЫ НАЗВАЛИ БУКВУ:" + value.charAt(0));
         boolean alreadySaid = Collections.frequency(saidLetters, value.charAt(0)) > 1;
         boolean inWord = false;
-        boolean victory = false;
         for (Character letter: randomWordForGame) {
             inWord = letter == value.charAt(0);
             if (inWord) {
@@ -172,4 +172,11 @@ public class GamePanell extends JDialog {
         return sendLetter;
     }
 
+    public JTextField getSaidLettersTextField() {
+        return saidLettersTextField;
+    }
+
+    public void setSaidLettersTextField(JTextField saidLettersTextField) {
+        this.saidLettersTextField = saidLettersTextField;
+    }
 }
